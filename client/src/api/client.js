@@ -7,8 +7,24 @@ const TOKEN_KEY = 'memoize_token';
 // to be a cold start, and the UI says so rather than looking frozen.
 const COLD_START_THRESHOLD_MS = 2500;
 
+/**
+ * Every backend route is mounted under /api (see server.js), so the base URL
+ * must end with it. Setting VITE_API_URL to the bare host is an easy mistake
+ * and produces 404s that look like missing routes, so normalise here instead:
+ * accept the host with or without /api, and with or without a trailing slash.
+ */
+function resolveBaseUrl() {
+  const configured = import.meta.env.VITE_API_URL?.trim();
+  if (!configured) return '/api'; // local dev — Vite proxies /api to the server
+
+  const withoutTrailingSlash = configured.replace(/\/+$/, '');
+  return /\/api$/.test(withoutTrailingSlash)
+    ? withoutTrailingSlash
+    : `${withoutTrailingSlash}/api`;
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: resolveBaseUrl(),
   headers: { 'Content-Type': 'application/json' },
   timeout: 60000,
 });
