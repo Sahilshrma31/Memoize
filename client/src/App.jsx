@@ -97,7 +97,10 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/app" element={withStats(<Home onDataChange={bumpStats} />)} />
+            <Route
+              path="/app"
+              element={withStats(<Home onDataChange={bumpStats} refreshKey={refreshKey} />)}
+            />
             <Route path="/problems" element={withStats(<AllProblems />)} />
             <Route path="/problems/:id" element={withStats(<ProblemDetail />)} />
           </Routes>

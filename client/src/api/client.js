@@ -97,6 +97,7 @@ export const reviewsApi = {
 
 export const statsApi = {
   get: () => api.get('/stats').then((r) => r.data),
+  patterns: () => api.get('/stats/patterns').then((r) => r.data),
 };
 
 export { TOKEN_KEY };
