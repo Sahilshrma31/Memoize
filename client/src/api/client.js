@@ -95,9 +95,15 @@ export const reviewsApi = {
   submit: (cardId, payload) => api.post(`/reviews/${cardId}`, payload).then((r) => r.data),
 };
 
+// Day boundaries are computed in the viewer's timezone, not UTC — otherwise a
+// late-night review lands on the wrong day and appears to break a streak.
+const tzOffset = () => new Date().getTimezoneOffset();
+
 export const statsApi = {
-  get: () => api.get('/stats').then((r) => r.data),
+  get: () => api.get('/stats', { params: { tzOffset: tzOffset() } }).then((r) => r.data),
   patterns: () => api.get('/stats/patterns').then((r) => r.data),
+  activity: (days = 365) =>
+    api.get('/stats/activity', { params: { tzOffset: tzOffset(), days } }).then((r) => r.data),
 };
 
 export { TOKEN_KEY };

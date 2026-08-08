@@ -5,56 +5,45 @@ const ReviewCard = require('../models/ReviewCard');
 const ReviewLog = require('../models/ReviewLog');
 const requireAuth = require('../middleware/requireAuth');
 const { scorePatterns } = require('../utils/patternStats');
+const { buildActivity } = require('../utils/activityStats');
 
 const router = express.Router();
 router.use(requireAuth);
 
-function dayKey(date) {
-  return date.toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+// Clients send Date.prototype.getTimezoneOffset(), so day boundaries land in
+// the user's local time rather than UTC. Falls back to UTC when absent.
+function parseTzOffset(raw) {
+  const n = Number.parseInt(raw, 10);
+  return Number.isFinite(n) && Math.abs(n) <= 840 ? n : 0;
 }
 
-async function computeStreak(userId) {
-  const logs = await ReviewLog.find({ userId }, 'reviewedAt').sort({ reviewedAt: -1 });
-  if (logs.length === 0) return 0;
-
-  const reviewedDays = new Set(logs.map((l) => dayKey(l.reviewedAt)));
-
-  const today = new Date();
-  let cursor = new Date(today);
-  let streak = 0;
-
-  // Streak counts backward from today; today itself doesn't have to have a
-  // review yet for the streak to still be "alive" (in progress).
-  if (!reviewedDays.has(dayKey(cursor))) {
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
-  }
-
-  while (reviewedDays.has(dayKey(cursor))) {
-    streak += 1;
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
-  }
-
-  return streak;
+async function loadActivity(userId, tzOffsetMinutes, windowDays) {
+  const logs = await ReviewLog.find({ userId }, 'reviewedAt').lean();
+  return buildActivity(logs, { tzOffsetMinutes, windowDays });
 }
 
 // GET /api/stats
 router.get('/', async (req, res) => {
   try {
     const userId = req.userId;
-    const [totalProblems, learningCount, reviewCount, masteredCount, dueTodayCount, streak] =
+    const tzOffsetMinutes = parseTzOffset(req.query.tzOffset);
+
+    const [totalProblems, learningCount, reviewCount, masteredCount, dueTodayCount, activity] =
       await Promise.all([
         Problem.countDocuments({ userId }),
         ReviewCard.countDocuments({ userId, state: 'learning' }),
         ReviewCard.countDocuments({ userId, state: 'review' }),
         ReviewCard.countDocuments({ userId, state: 'mastered' }),
         ReviewCard.countDocuments({ userId, nextReviewAt: { $lte: new Date() } }),
-        computeStreak(userId),
+        loadActivity(userId, tzOffsetMinutes, 1),
       ]);
 
     res.json({
       totalProblems,
       dueToday: dueTodayCount,
-      streak,
+      streak: activity.currentStreak,
+      longestStreak: activity.longestStreak,
+      reviewedToday: activity.reviewedToday,
       byState: {
         learning: learningCount,
         review: reviewCount,
@@ -112,6 +101,22 @@ router.get('/patterns', async (req, res) => {
     ]);
 
     res.json({ patterns: scorePatterns(rows) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/stats/activity?tzOffset=-330&days=365
+// Daily review counts for the contribution heatmap, plus streak figures.
+router.get('/activity', async (req, res) => {
+  try {
+    const tzOffsetMinutes = parseTzOffset(req.query.tzOffset);
+    const requested = Number.parseInt(req.query.days, 10);
+    const windowDays = Number.isFinite(requested)
+      ? Math.min(Math.max(requested, 1), 366)
+      : 365;
+
+    res.json(await loadActivity(req.userId, tzOffsetMinutes, windowDays));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

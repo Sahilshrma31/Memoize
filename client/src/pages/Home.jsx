@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ActivityHeatmap from '../components/ActivityHeatmap';
 import AddProblemForm from '../components/AddProblemForm';
 import PatternMap from '../components/PatternMap';
 import TodayQueue from '../components/TodayQueue';
@@ -21,6 +22,11 @@ export default function Home({ onDataChange, refreshKey }) {
       <section>
         <h2 className="eyebrow mb-3">Today’s Queue</h2>
         <TodayQueue key={queueKey} onQueueChange={onDataChange} />
+      </section>
+
+      <section>
+        <h2 className="eyebrow mb-3">Your Streak</h2>
+        <ActivityHeatmap refreshKey={refreshKey} />
       </section>
 
       <section>
