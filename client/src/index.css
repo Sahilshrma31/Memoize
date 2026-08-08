@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-midnight-bg text-midnight-text antialiased font-mono;
+  }
+  ::selection {
+    background-color: rgba(255, 90, 31, 0.3);
+    color: #f2f2ef;
+  }
+}
+
+@layer components {
+  .chip {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.15em] text-accent-orange;
+  }
+  .eyebrow::before {
+    content: '// ';
+  }
+  .eyebrow::after {
+    content: ' //';
+  }
+
+  .display-heading {
+    @apply font-display font-normal tracking-wide;
+  }
+
+  .cursor-blink {
+    animation: blink 1.1s step-end infinite;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
