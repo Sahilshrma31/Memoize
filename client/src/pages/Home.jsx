@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import ActivityHeatmap from '../components/ActivityHeatmap';
 import AddProblemForm from '../components/AddProblemForm';
-import HowItWorks from '../components/HowItWorks';
 import PatternMap from '../components/PatternMap';
 import TodayQueue from '../components/TodayQueue';
 
@@ -10,9 +9,6 @@ export default function Home({ onDataChange, refreshKey }) {
 
   return (
     <div className="space-y-8">
-      {/* Expanded on a first visit, then collapses to a single bar once dismissed. */}
-      <HowItWorks />
-
       <section>
         <h2 className="eyebrow mb-3">Add a Problem</h2>
         <AddProblemForm

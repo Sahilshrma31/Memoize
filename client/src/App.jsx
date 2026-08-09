@@ -6,15 +6,24 @@ import WakingBanner from './components/WakingBanner';
 import { useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import AllProblems from './pages/AllProblems';
+import Guide from './pages/Guide';
 import Home from './pages/Home';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import ProblemDetail from './pages/ProblemDetail';
 
+// Signed-in nav. The guide sits outside this list because it's public — see below.
 const NAV_LINKS = [
   { to: '/app', label: 'Today', end: true },
   { to: '/problems', label: 'All Problems', end: false },
 ];
+
+const navLinkClass = ({ isActive }) =>
+  `border-b-2 pb-0.5 text-sm uppercase tracking-wide transition-colors ${
+    isActive
+      ? 'border-accent-orange text-midnight-text'
+      : 'border-transparent text-midnight-muted hover:text-midnight-text'
+  }`;
 
 function App() {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -41,26 +50,18 @@ function App() {
                 <span className="h-3 w-3 bg-accent-orange" />
                 <span className="display-heading text-lg tracking-widest">MEMOIZE</span>
               </Link>
-              {isAuthenticated && (
-                <nav className="flex items-center gap-6">
-                  {NAV_LINKS.map((link) => (
-                    <NavLink
-                      key={link.to}
-                      to={link.to}
-                      end={link.end}
-                      className={({ isActive }) =>
-                        `border-b-2 pb-0.5 text-sm uppercase tracking-wide transition-colors ${
-                          isActive
-                            ? 'border-accent-orange text-midnight-text'
-                            : 'border-transparent text-midnight-muted hover:text-midnight-text'
-                        }`
-                      }
-                    >
+              <nav className="flex items-center gap-6">
+                {isAuthenticated &&
+                  NAV_LINKS.map((link) => (
+                    <NavLink key={link.to} to={link.to} end={link.end} className={navLinkClass}>
                       {link.label}
                     </NavLink>
                   ))}
-                </nav>
-              )}
+                {/* Public — someone deciding whether to sign up should be able to read this. */}
+                <NavLink to="/guide" className={navLinkClass}>
+                  How It Works
+                </NavLink>
+              </nav>
             </div>
 
             {isAuthenticated ? (
@@ -97,6 +98,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/guide" element={<Guide />} />
             <Route
               path="/app"
               element={withStats(<Home onDataChange={bumpStats} refreshKey={refreshKey} />)}
