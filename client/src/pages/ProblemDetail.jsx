@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { problemsApi } from '../api/client';
 import Chip from '../components/Chip';
+import IntuitionPanel from '../components/IntuitionPanel';
 import PlatformBadge from '../components/PlatformBadge';
 import StateBadge from '../components/StateBadge';
 
@@ -86,6 +87,11 @@ export default function ProblemDetail() {
           </div>
         )}
       </div>
+
+      <IntuitionPanel
+        problem={problem}
+        onSaved={(updated) => setData((d) => ({ ...d, problem: updated }))}
+      />
 
       <Suspense
         fallback={

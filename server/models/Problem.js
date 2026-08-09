@@ -18,6 +18,12 @@ const problemSchema = new mongoose.Schema(
       default: 'medium',
     },
     notes: { type: String, default: '' },
+    // The key insight — the thing you want to recall before re-solving.
+    // Deliberately separate from notes: notes say why the problem is worth
+    // keeping, intuition is the approach itself, and it gets rewritten as
+    // your understanding sharpens across reviews.
+    intuition: { type: String, default: '' },
+    intuitionUpdatedAt: { type: Date },
   },
   { timestamps: true }
 );

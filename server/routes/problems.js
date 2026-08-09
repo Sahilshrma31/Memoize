@@ -17,7 +17,7 @@ function detectPlatform(url = '') {
 // POST /api/problems - create a Problem + auto-create its ReviewCard (due now)
 router.post('/', async (req, res) => {
   try {
-    const { title, url, platform, tags, company, difficulty, notes } = req.body;
+    const { title, url, platform, tags, company, difficulty, notes, intuition } = req.body;
 
     const problem = await Problem.create({
       userId: req.userId,
@@ -28,6 +28,8 @@ router.post('/', async (req, res) => {
       company,
       difficulty,
       notes,
+      intuition,
+      intuitionUpdatedAt: intuition ? new Date() : undefined,
     });
 
     const reviewCard = await ReviewCard.create({ userId: req.userId, problemId: problem._id });
@@ -80,6 +82,43 @@ router.get('/:id', async (req, res) => {
     res.json({ problem, reviewCard, reviewLogs });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/problems/:id - edit the parts of a problem that evolve over time.
+// Intuition especially: it gets rewritten as understanding sharpens, so it
+// can't be write-once like the rest of the record.
+const EDITABLE_FIELDS = ['title', 'url', 'notes', 'intuition', 'tags', 'company', 'difficulty'];
+
+router.patch('/:id', async (req, res) => {
+  try {
+    const updates = {};
+    for (const field of EDITABLE_FIELDS) {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+        updates[field] = req.body[field];
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'No editable fields supplied' });
+    }
+
+    // Stamp the intuition edit so the UI can show when it was last refined.
+    if (Object.prototype.hasOwnProperty.call(updates, 'intuition')) {
+      updates.intuitionUpdatedAt = new Date();
+    }
+
+    const problem = await Problem.findOneAndUpdate(
+      { _id: req.params.id, userId: req.userId },
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+
+    if (!problem) return res.status(404).json({ error: 'Problem not found' });
+
+    res.json({ problem });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 

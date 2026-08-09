@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Chip from './Chip';
+import IntuitionPanel from './IntuitionPanel';
 import PlatformBadge from './PlatformBadge';
 import RatingButtons from './RatingButtons';
 import Stopwatch from './Stopwatch';
 
 export default function ProblemCard({ card, onRate, leaving }) {
-  const problem = card.problemId;
+  const [problem, setProblem] = useState(card.problemId);
   const [submitting, setSubmitting] = useState(false);
   const secondsRef = useRef(0);
 
@@ -59,6 +60,11 @@ export default function ProblemCard({ card, onRate, leaving }) {
       {problem.notes && (
         <p className="mt-3 text-sm text-midnight-muted line-clamp-2">{problem.notes}</p>
       )}
+
+      {/* Kept covered until you ask for it — attempt recall before checking. */}
+      <div className="mt-4">
+        <IntuitionPanel problem={problem} onSaved={setProblem} startHidden compact />
+      </div>
 
       <div className="mt-4 flex items-center justify-between">
         <Stopwatch onTick={(s) => (secondsRef.current = s)} />

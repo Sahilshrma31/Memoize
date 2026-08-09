@@ -22,6 +22,7 @@ const EMPTY_FORM = {
   company: [],
   difficulty: 'medium',
   notes: '',
+  intuition: '',
 };
 
 const inputCls =
@@ -136,12 +137,27 @@ export default function AddProblemForm({ onAdded }) {
       </div>
 
       <div>
-        <label className={labelCls}>Notes</label>
+        <label className={labelCls}>
+          Intuition <span className="text-midnight-muted/60 normal-case">— the insight to recall</span>
+        </label>
+        <textarea
+          rows={2}
+          value={form.intuition}
+          onChange={(e) => setForm((f) => ({ ...f, intuition: e.target.value }))}
+          placeholder="What's the trick? e.g. sort by end time, then greedily pick non-overlapping…"
+          className={`${inputCls} resize-none`}
+        />
+      </div>
+
+      <div>
+        <label className={labelCls}>
+          Notes <span className="text-midnight-muted/60 normal-case">— why it's worth revisiting</span>
+        </label>
         <textarea
           rows={2}
           value={form.notes}
           onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-          placeholder="Why is this worth revisiting? Key insight…"
+          placeholder="Got stuck on the edge case, or a pattern that keeps recurring…"
           className={`${inputCls} resize-none`}
         />
       </div>
