@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { problemsApi } from '../api/client';
 import Chip from '../components/Chip';
+import DeleteProblem from '../components/DeleteProblem';
 import IntuitionPanel from '../components/IntuitionPanel';
 import PlatformBadge from '../components/PlatformBadge';
 import StateBadge from '../components/StateBadge';
@@ -138,6 +139,10 @@ export default function ProblemDetail() {
             </table>
           </div>
         )}
+      </div>
+
+      <div className="pt-2 border-t border-midnight-border">
+        <DeleteProblem problem={problem} reviewLogCount={reviewLogs?.length || 0} />
       </div>
     </div>
   );

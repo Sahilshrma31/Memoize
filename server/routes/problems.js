@@ -122,4 +122,34 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
+// DELETE /api/problems/:id - remove a problem and everything hanging off it.
+// The ReviewCard and ReviewLogs must go too: stats and the pattern map read
+// straight from those collections, so leaving them behind would keep the
+// problem contributing to streaks and success rates after it's "deleted".
+router.delete('/:id', async (req, res) => {
+  try {
+    const problem = await Problem.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.userId,
+    });
+
+    if (!problem) return res.status(404).json({ error: 'Problem not found' });
+
+    const [cards, logs] = await Promise.all([
+      ReviewCard.deleteMany({ problemId: problem._id, userId: req.userId }),
+      ReviewLog.deleteMany({ problemId: problem._id, userId: req.userId }),
+    ]);
+
+    res.json({
+      deleted: {
+        problem: problem.title,
+        reviewCards: cards.deletedCount,
+        reviewLogs: logs.deletedCount,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;

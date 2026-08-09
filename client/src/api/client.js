@@ -88,6 +88,7 @@ export const problemsApi = {
   get: (id) => api.get(`/problems/${id}`).then((r) => r.data),
   create: (payload) => api.post('/problems', payload).then((r) => r.data),
   update: (id, payload) => api.patch(`/problems/${id}`, payload).then((r) => r.data),
+  remove: (id) => api.delete(`/problems/${id}`).then((r) => r.data),
 };
 
 export const reviewsApi = {
