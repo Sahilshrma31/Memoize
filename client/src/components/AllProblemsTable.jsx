@@ -67,6 +67,7 @@ export default function AllProblemsTable() {
           <option value="">All platforms</option>
           <option value="leetcode">LeetCode</option>
           <option value="codeforces">Codeforces</option>
+          <option value="gfg">GeeksforGeeks</option>
           <option value="other">Other</option>
         </select>
         <select

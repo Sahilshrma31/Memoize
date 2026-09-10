@@ -3,6 +3,7 @@ const Problem = require('../models/Problem');
 const ReviewCard = require('../models/ReviewCard');
 const ReviewLog = require('../models/ReviewLog');
 const requireAuth = require('../middleware/requireAuth');
+const { lookupProblem } = require('../utils/problemLookup');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -11,8 +12,19 @@ function detectPlatform(url = '') {
   const lower = url.toLowerCase();
   if (lower.includes('leetcode.com')) return 'leetcode';
   if (lower.includes('codeforces.com')) return 'codeforces';
+  if (lower.includes('geeksforgeeks.org')) return 'gfg';
   return 'other';
 }
+
+// GET /api/problems/lookup?url= - fetch title/difficulty/tags for a pasted link.
+// Registered before /:id so "lookup" isn't treated as a problem id.
+router.get('/lookup', async (req, res) => {
+  try {
+    res.json(await lookupProblem(req.query.url || ''));
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
 
 // POST /api/problems - create a Problem + auto-create its ReviewCard (due now)
 router.post('/', async (req, res) => {

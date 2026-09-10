@@ -7,7 +7,7 @@ const problemSchema = new mongoose.Schema(
     url: { type: String, required: true },
     platform: {
       type: String,
-      enum: ['leetcode', 'codeforces', 'other'],
+      enum: ['leetcode', 'codeforces', 'gfg', 'other'],
       default: 'other',
     },
     tags: { type: [String], default: [] },

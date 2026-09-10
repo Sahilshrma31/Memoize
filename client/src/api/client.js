@@ -86,6 +86,7 @@ export const authApi = {
 export const problemsApi = {
   list: (params) => api.get('/problems', { params }).then((r) => r.data),
   get: (id) => api.get(`/problems/${id}`).then((r) => r.data),
+  lookup: (url) => api.get('/problems/lookup', { params: { url } }).then((r) => r.data),
   create: (payload) => api.post('/problems', payload).then((r) => r.data),
   update: (id, payload) => api.patch(`/problems/${id}`, payload).then((r) => r.data),
   remove: (id) => api.delete(`/problems/${id}`).then((r) => r.data),
