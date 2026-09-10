@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import ActivityHeatmap from '../components/ActivityHeatmap';
 import AddProblemForm from '../components/AddProblemForm';
 import PatternMap from '../components/PatternMap';
@@ -30,7 +31,12 @@ export default function Home({ onDataChange, refreshKey }) {
       </section>
 
       <section>
-        <h2 className="eyebrow mb-3">Where You’re Weakest</h2>
+        <div className="flex items-baseline justify-between mb-3">
+          <h2 className="eyebrow">Where You’re Weakest</h2>
+          <Link to="/patterns" className="text-xs uppercase tracking-wide text-midnight-muted hover:text-accent-orange">
+            Full pattern tracker →
+          </Link>
+        </div>
         <PatternMap refreshKey={refreshKey} />
       </section>
     </div>

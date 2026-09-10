@@ -6,6 +6,7 @@ const ReviewLog = require('../models/ReviewLog');
 const requireAuth = require('../middleware/requireAuth');
 const { scorePatterns } = require('../utils/patternStats');
 const { buildActivity } = require('../utils/activityStats');
+const { buildPatternTracker } = require('../utils/patternTracker');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -101,6 +102,24 @@ router.get('/patterns', async (req, res) => {
     ]);
 
     res.json({ patterns: scorePatterns(rows) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/stats/pattern-tracker - per-pattern problems solved, revisions,
+// recall, mastery and tier. Starts from problems, not reviews, so unreviewed
+// patterns still appear.
+router.get('/pattern-tracker', async (req, res) => {
+  try {
+    const userId = req.userId;
+    const [problems, cards, logs] = await Promise.all([
+      Problem.find({ userId }, 'title tags difficulty').lean(),
+      ReviewCard.find({ userId }, 'problemId state nextReviewAt').lean(),
+      ReviewLog.find({ userId }, 'problemId rating timeTakenSec reviewedAt').lean(),
+    ]);
+
+    res.json(buildPatternTracker({ problems, cards, logs }));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

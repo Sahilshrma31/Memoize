@@ -10,12 +10,14 @@ import Guide from './pages/Guide';
 import Home from './pages/Home';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
+import Patterns from './pages/Patterns';
 import ProblemDetail from './pages/ProblemDetail';
 
 // Signed-in nav. The guide sits outside this list because it's public — see below.
 const NAV_LINKS = [
   { to: '/app', label: 'Today', end: true },
   { to: '/problems', label: 'All Problems', end: false },
+  { to: '/patterns', label: 'Patterns', end: false },
 ];
 
 const navLinkClass = ({ isActive }) =>
@@ -105,6 +107,7 @@ function App() {
             />
             <Route path="/problems" element={withStats(<AllProblems />)} />
             <Route path="/problems/:id" element={withStats(<ProblemDetail />)} />
+            <Route path="/patterns" element={withStats(<Patterns />)} />
           </Routes>
         </main>
       </div>
