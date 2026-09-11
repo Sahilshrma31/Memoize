@@ -15,6 +15,9 @@ const LEVELS = [
 
 const levelFor = (count) => LEVELS.find((l) => count <= l.max);
 
+// A missed day covered by a streak freeze.
+const FROZEN_CLS = 'bg-sky-400/40 ring-1 ring-inset ring-sky-300/40';
+
 function formatDate(key) {
   const d = new Date(key + 'T00:00:00Z');
   return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
@@ -90,7 +93,12 @@ export default function ActivityHeatmap({ refreshKey }) {
           suffix={data.currentStreak > 0 ? ' 🔥' : ''}
         />
         <Stat value={data.longestStreak} label="Longest Streak" />
-        <Stat value={data.activeDays} label="Active Days" />
+        <Stat
+          value={`${'❄'.repeat(data.freezesAvailable) || '0'}`}
+          label={`Freezes (max ${data.maxFreezes})`}
+          accent="text-sky-300"
+          title="Earn one for every 7 days in a row. A missed day spends one instead of breaking your streak."
+        />
         <Stat value={data.totalReviews} label="Total Reviews" />
       </div>
 
@@ -98,8 +106,10 @@ export default function ActivityHeatmap({ refreshKey }) {
         <h3 className="display-heading text-sm tracking-wide">Activity</h3>
         <span className="text-xs text-midnight-muted tabular-nums">
           {hovered
-            ? `${hovered.count} review${hovered.count === 1 ? '' : 's'} · ${formatDate(hovered.date)}`
-            : 'last 12 months'}
+            ? hovered.frozen
+              ? `❄ freeze used · ${formatDate(hovered.date)}`
+              : `${hovered.count} review${hovered.count === 1 ? '' : 's'} · ${formatDate(hovered.date)}`
+            : `last 12 months · ${data.activeDays} active day${data.activeDays === 1 ? '' : 's'}`}
         </span>
       </div>
 
@@ -142,8 +152,12 @@ export default function ActivityHeatmap({ refreshKey }) {
                   <span
                     key={cell.date}
                     onMouseEnter={() => setHovered(cell)}
-                    title={`${cell.count} review${cell.count === 1 ? '' : 's'} on ${formatDate(cell.date)}`}
-                    className={`w-[11px] h-[11px] ${levelFor(cell.count).cls} transition-colors`}
+                    title={
+                      cell.frozen
+                        ? `Streak freeze used on ${formatDate(cell.date)}`
+                        : `${cell.count} review${cell.count === 1 ? '' : 's'} on ${formatDate(cell.date)}`
+                    }
+                    className={`w-[11px] h-[11px] ${cell.frozen ? FROZEN_CLS : levelFor(cell.count).cls} transition-colors`}
                   />
                 )
               )}
@@ -158,6 +172,8 @@ export default function ActivityHeatmap({ refreshKey }) {
           <span key={i} className={`w-[11px] h-[11px] ${l.cls}`} />
         ))}
         <span className="text-xs uppercase tracking-widest text-midnight-muted">More</span>
+        <span className={`ml-3 w-[11px] h-[11px] ${FROZEN_CLS}`} />
+        <span className="text-xs uppercase tracking-widest text-midnight-muted">Freeze</span>
         {data.busiestDay?.date && (
           <span className="ml-auto text-xs text-midnight-muted">
             best day: {data.busiestDay.count} on {formatDate(data.busiestDay.date)}
@@ -168,9 +184,9 @@ export default function ActivityHeatmap({ refreshKey }) {
   );
 }
 
-function Stat({ value, label, accent = 'text-midnight-text', suffix = '' }) {
+function Stat({ value, label, accent = 'text-midnight-text', suffix = '', title }) {
   return (
-    <div className="px-5 py-4">
+    <div className="px-5 py-4" title={title}>
       <p className={`display-heading text-2xl tabular-nums ${accent}`}>
         {value}
         {suffix}

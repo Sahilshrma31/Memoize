@@ -15,6 +15,9 @@ const reviewLogSchema = new mongoose.Schema(
     },
     timeTakenSec: { type: Number },
     reviewedAt: { type: Date, default: Date.now },
+    // This review was the day's challenge attempt. Stored on the log (not just
+    // the user) so the challenge XP bonus can be replayed from history.
+    challenge: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -92,15 +92,22 @@ export const problemsApi = {
   remove: (id) => api.delete(`/problems/${id}`).then((r) => r.data),
 };
 
-export const reviewsApi = {
-  today: () => api.get('/reviews/today').then((r) => r.data),
-  upcoming: () => api.get('/reviews/upcoming').then((r) => r.data),
-  submit: (cardId, payload) => api.post(`/reviews/${cardId}`, payload).then((r) => r.data),
-};
-
 // Day boundaries are computed in the viewer's timezone, not UTC — otherwise a
 // late-night review lands on the wrong day and appears to break a streak.
 const tzOffset = () => new Date().getTimezoneOffset();
+
+export const reviewsApi = {
+  today: () => api.get('/reviews/today').then((r) => r.data),
+  upcoming: () => api.get('/reviews/upcoming').then((r) => r.data),
+  submit: (cardId, payload) =>
+    api.post(`/reviews/${cardId}`, payload, { params: { tzOffset: tzOffset() } }).then((r) => r.data),
+};
+
+export const progressApi = {
+  get: () => api.get('/progress', { params: { tzOffset: tzOffset() } }).then((r) => r.data),
+  today: () => api.get('/progress/today', { params: { tzOffset: tzOffset() } }).then((r) => r.data),
+  setGoal: (goal) => api.put('/progress/goal', goal).then((r) => r.data),
+};
 
 export const statsApi = {
   get: () => api.get('/stats', { params: { tzOffset: tzOffset() } }).then((r) => r.data),

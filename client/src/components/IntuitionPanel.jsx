@@ -18,18 +18,32 @@ function timeAgo(date) {
  * covered so you attempt recall first, then reveal to check yourself. Showing
  * it immediately would defeat the point of the review.
  */
-export default function IntuitionPanel({ problem, onSaved, startHidden = false, compact = false }) {
+export default function IntuitionPanel({
+  problem,
+  onSaved,
+  startHidden = false,
+  compact = false,
+  revealRequest = 0, // bump to reveal from outside (the Space shortcut)
+}) {
   const [revealed, setRevealed] = useState(!startHidden);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(problem.intuition || '');
   const [saving, setSaving] = useState(false);
+  // What you think the approach is, typed before peeking. Not saved — its
+  // only job is to make you commit to an answer so the reveal means something.
+  const [attempt, setAttempt] = useState('');
   const { showToast } = useToast();
 
   useEffect(() => {
     setDraft(problem.intuition || '');
     setRevealed(!startHidden);
     setEditing(false);
+    setAttempt('');
   }, [problem._id, problem.intuition, startHidden]);
+
+  useEffect(() => {
+    if (revealRequest > 0) setRevealed(true);
+  }, [revealRequest]);
 
   const hasIntuition = Boolean(problem.intuition?.trim());
 
@@ -98,15 +112,33 @@ export default function IntuitionPanel({ problem, onSaved, startHidden = false, 
           + Write the key insight for this problem
         </button>
       ) : !revealed ? (
-        <button
-          type="button"
-          onClick={() => setRevealed(true)}
-          className="w-full border border-dashed border-midnight-border px-4 py-4 text-sm text-midnight-muted hover:border-accent-orange/50 hover:text-midnight-text transition-colors"
-        >
-          Try to recall it first — then reveal your intuition
-        </button>
+        <div className="border border-dashed border-midnight-border p-3 space-y-2">
+          <textarea
+            rows={2}
+            value={attempt}
+            onChange={(e) => setAttempt(e.target.value)}
+            placeholder="Before you peek: what's the approach? One line is enough."
+            className="w-full bg-transparent text-sm text-midnight-text placeholder:text-midnight-muted/60 outline-none resize-none"
+          />
+          <button
+            type="button"
+            onClick={() => setRevealed(true)}
+            className="w-full border border-midnight-border px-4 py-2 text-xs uppercase tracking-wide text-midnight-muted hover:border-accent-orange/50 hover:text-midnight-text transition-colors"
+          >
+            Reveal intuition{compact && <span className="opacity-50 normal-case"> · space</span>}
+          </button>
+        </div>
       ) : (
         <div>
+          {attempt.trim() && (
+            <div className="mb-3 border-l-2 border-midnight-border pl-3">
+              <p className="text-[10px] uppercase tracking-widest text-midnight-muted">You recalled</p>
+              <p className="text-sm text-midnight-muted whitespace-pre-wrap">{attempt}</p>
+            </div>
+          )}
+          {attempt.trim() && (
+            <p className="text-[10px] uppercase tracking-widest text-accent-orange mb-1">Your intuition</p>
+          )}
           <p className="text-sm text-midnight-text whitespace-pre-wrap leading-relaxed">
             {problem.intuition}
           </p>

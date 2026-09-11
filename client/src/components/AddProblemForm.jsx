@@ -44,8 +44,9 @@ const inputCls =
   'w-full border border-midnight-border bg-midnight-bg px-3 py-2 text-sm outline-none focus:border-accent-orange/60 transition-colors';
 const labelCls = 'block text-xs uppercase tracking-wide text-midnight-muted mb-1.5';
 
-export default function AddProblemForm({ onAdded }) {
+export default function AddProblemForm({ onAdded, collapsible = false }) {
   const [form, setForm] = useState(EMPTY_FORM);
+  const [manualOpen, setManualOpen] = useState(false);
   const [platformTouched, setPlatformTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [lookup, setLookup] = useState({ status: 'idle', message: '' });
@@ -103,6 +104,7 @@ export default function AddProblemForm({ onAdded }) {
 
   const resetForm = () => {
     setForm(EMPTY_FORM);
+    setManualOpen(false);
     setPlatformTouched(false);
     touched.current = { title: false, difficulty: false };
     lastAuto.current = { tags: [], company: [] };
@@ -125,16 +127,20 @@ export default function AddProblemForm({ onAdded }) {
     }
   };
 
+  // Collapsed, the form is a single paste box; it opens up once there's a
+  // link (auto-fill does the rest) or you choose to enter one by hand.
+  const expanded = !collapsible || manualOpen || form.url.trim() !== '';
+
   return (
     <form
       onSubmit={handleSubmit}
       className="border border-midnight-border bg-midnight-surface p-5 space-y-4"
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className={labelCls}>
-            URL <span className="text-midnight-muted/60 normal-case">— paste a LeetCode, GFG or Codeforces link to auto-fill</span>
-          </label>
+      <div>
+        <label className={labelCls}>
+          URL <span className="text-midnight-muted/60 normal-case">— paste a LeetCode, GFG or Codeforces link to auto-fill</span>
+        </label>
+        <div className="flex gap-2">
           <input
             type="url"
             required
@@ -143,119 +149,143 @@ export default function AddProblemForm({ onAdded }) {
             placeholder="https://leetcode.com/problems/two-sum/"
             className={inputCls}
           />
-          {lookup.status !== 'idle' && (
-            <p
-              className={`mt-1.5 text-xs ${
-                lookup.status === 'error'
-                  ? 'text-rating-blackout'
-                  : lookup.status === 'done'
-                    ? 'text-rating-good'
-                    : 'text-midnight-muted'
-              }`}
+          {!expanded && (
+            <button
+              type="button"
+              onClick={() => setManualOpen(true)}
+              className="shrink-0 border border-midnight-border px-4 text-xs uppercase tracking-wide text-midnight-muted hover:text-midnight-text hover:border-accent-orange/50 transition-colors"
             >
-              {lookup.status === 'done' ? '✓ ' : ''}
-              {lookup.message}
-            </p>
+              Manual
+            </button>
           )}
         </div>
-        <div>
-          <label className={labelCls}>Title</label>
-          <input
-            type="text"
-            required
-            value={form.title}
-            onChange={(e) => {
-              touched.current.title = true;
-              setForm((f) => ({ ...f, title: e.target.value }));
-            }}
-            placeholder="Two Sum"
-            className={inputCls}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className={labelCls}>Platform</label>
-          <select
-            value={form.platform}
-            onChange={(e) => {
-              setPlatformTouched(true);
-              setForm((f) => ({ ...f, platform: e.target.value }));
-            }}
-            className={inputCls}
+        {lookup.status !== 'idle' && (
+          <p
+            className={`mt-1.5 text-xs ${
+              lookup.status === 'error'
+                ? 'text-rating-blackout'
+                : lookup.status === 'done'
+                  ? 'text-rating-good'
+                  : 'text-midnight-muted'
+            }`}
           >
-            <option value="leetcode">LeetCode</option>
-            <option value="codeforces">Codeforces</option>
-            <option value="gfg">GeeksforGeeks</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <div>
-          <label className={labelCls}>Difficulty</label>
-          <select
-            value={form.difficulty}
-            onChange={(e) => {
-              touched.current.difficulty = true;
-              setForm((f) => ({ ...f, difficulty: e.target.value }));
-            }}
-            className={inputCls}
-          >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </div>
+            {lookup.status === 'done' ? '✓ ' : ''}
+            {lookup.message}
+          </p>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <ChipsInput
-          label="Tags"
-          placeholder="DP, graphs, greedy… (Enter)"
-          values={form.tags}
-          onChange={(tags) => setForm((f) => ({ ...f, tags }))}
-        />
-        <ChipsInput
-          label="Companies"
-          placeholder="Amazon, Google… (Enter)"
-          values={form.company}
-          onChange={(company) => setForm((f) => ({ ...f, company }))}
-        />
-      </div>
+      {expanded && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div className="sm:col-span-2">
+              <label className={labelCls}>Title</label>
+              <input
+                type="text"
+                required
+                value={form.title}
+                onChange={(e) => {
+                  touched.current.title = true;
+                  setForm((f) => ({ ...f, title: e.target.value }));
+                }}
+                placeholder="Two Sum"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Platform</label>
+              <select
+                value={form.platform}
+                onChange={(e) => {
+                  setPlatformTouched(true);
+                  setForm((f) => ({ ...f, platform: e.target.value }));
+                }}
+                className={inputCls}
+              >
+                <option value="leetcode">LeetCode</option>
+                <option value="codeforces">Codeforces</option>
+                <option value="gfg">GeeksforGeeks</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Difficulty</label>
+              <select
+                value={form.difficulty}
+                onChange={(e) => {
+                  touched.current.difficulty = true;
+                  setForm((f) => ({ ...f, difficulty: e.target.value }));
+                }}
+                className={inputCls}
+              >
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
 
-      <div>
-        <label className={labelCls}>
-          Intuition <span className="text-midnight-muted/60 normal-case">— the insight to recall</span>
-        </label>
-        <textarea
-          rows={2}
-          value={form.intuition}
-          onChange={(e) => setForm((f) => ({ ...f, intuition: e.target.value }))}
-          placeholder="What's the trick? e.g. sort by end time, then greedily pick non-overlapping…"
-          className={`${inputCls} resize-none`}
-        />
-      </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <ChipsInput
+              label="Tags"
+              placeholder="DP, graphs, greedy… (Enter)"
+              values={form.tags}
+              onChange={(tags) => setForm((f) => ({ ...f, tags }))}
+            />
+            <ChipsInput
+              label="Companies"
+              placeholder="Amazon, Google… (Enter)"
+              values={form.company}
+              onChange={(company) => setForm((f) => ({ ...f, company }))}
+            />
+          </div>
 
-      <div>
-        <label className={labelCls}>
-          Notes <span className="text-midnight-muted/60 normal-case">— why it's worth revisiting</span>
-        </label>
-        <textarea
-          rows={2}
-          value={form.notes}
-          onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-          placeholder="Got stuck on the edge case, or a pattern that keeps recurring…"
-          className={`${inputCls} resize-none`}
-        />
-      </div>
+          <div>
+            <label className={labelCls}>
+              Intuition <span className="text-midnight-muted/60 normal-case">— the insight to recall</span>
+            </label>
+            <textarea
+              rows={2}
+              value={form.intuition}
+              onChange={(e) => setForm((f) => ({ ...f, intuition: e.target.value }))}
+              placeholder="What's the trick? e.g. sort by end time, then greedily pick non-overlapping…"
+              className={`${inputCls} resize-none`}
+            />
+          </div>
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="w-full sm:w-auto bg-accent-orange hover:bg-accent-orange/90 px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-black transition-colors disabled:opacity-50"
-      >
-        {submitting ? 'Adding…' : 'Add Problem'}
-      </button>
+          <div>
+            <label className={labelCls}>
+              Notes <span className="text-midnight-muted/60 normal-case">— why it's worth revisiting</span>
+            </label>
+            <textarea
+              rows={2}
+              value={form.notes}
+              onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+              placeholder="Got stuck on the edge case, or a pattern that keeps recurring…"
+              className={`${inputCls} resize-none`}
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full sm:w-auto bg-accent-orange hover:bg-accent-orange/90 px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-black transition-colors disabled:opacity-50"
+            >
+              {submitting ? 'Adding…' : 'Add Problem'}
+            </button>
+            {collapsible && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="w-full sm:w-auto border border-midnight-border px-6 py-2.5 text-sm uppercase tracking-wide text-midnight-muted hover:text-midnight-text transition-colors"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 }

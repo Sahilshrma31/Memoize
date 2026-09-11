@@ -5,18 +5,12 @@ const ReviewCard = require('../models/ReviewCard');
 const ReviewLog = require('../models/ReviewLog');
 const requireAuth = require('../middleware/requireAuth');
 const { scorePatterns } = require('../utils/patternStats');
-const { buildActivity } = require('../utils/activityStats');
+const { buildActivity, dayKey, shiftDays } = require('../utils/activityStats');
 const { buildPatternTracker } = require('../utils/patternTracker');
+const { parseTzOffset, localDayStart } = require('../utils/history');
 
 const router = express.Router();
 router.use(requireAuth);
-
-// Clients send Date.prototype.getTimezoneOffset(), so day boundaries land in
-// the user's local time rather than UTC. Falls back to UTC when absent.
-function parseTzOffset(raw) {
-  const n = Number.parseInt(raw, 10);
-  return Number.isFinite(n) && Math.abs(n) <= 840 ? n : 0;
-}
 
 async function loadActivity(userId, tzOffsetMinutes, windowDays) {
   const logs = await ReviewLog.find({ userId }, 'reviewedAt').lean();
@@ -28,22 +22,28 @@ router.get('/', async (req, res) => {
   try {
     const userId = req.userId;
     const tzOffsetMinutes = parseTzOffset(req.query.tzOffset);
+    const now = new Date();
+    // End of tomorrow in the user's timezone — "what's coming up next".
+    const endOfTomorrow = localDayStart(shiftDays(dayKey(now, tzOffsetMinutes), 2), tzOffsetMinutes);
 
-    const [totalProblems, learningCount, reviewCount, masteredCount, dueTodayCount, activity] =
+    const [totalProblems, learningCount, reviewCount, masteredCount, dueTodayCount, dueByTomorrow, activity] =
       await Promise.all([
         Problem.countDocuments({ userId }),
         ReviewCard.countDocuments({ userId, state: 'learning' }),
         ReviewCard.countDocuments({ userId, state: 'review' }),
         ReviewCard.countDocuments({ userId, state: 'mastered' }),
-        ReviewCard.countDocuments({ userId, nextReviewAt: { $lte: new Date() } }),
+        ReviewCard.countDocuments({ userId, nextReviewAt: { $lte: now } }),
+        ReviewCard.countDocuments({ userId, nextReviewAt: { $gt: now, $lt: endOfTomorrow } }),
         loadActivity(userId, tzOffsetMinutes, 1),
       ]);
 
     res.json({
       totalProblems,
       dueToday: dueTodayCount,
+      dueByTomorrow,
       streak: activity.currentStreak,
       longestStreak: activity.longestStreak,
+      freezesAvailable: activity.freezesAvailable,
       reviewedToday: activity.reviewedToday,
       byState: {
         learning: learningCount,

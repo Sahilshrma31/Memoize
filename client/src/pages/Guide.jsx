@@ -35,6 +35,10 @@ const GLOSSARY = [
   ['Review', 'Actively being spaced out at growing intervals.'],
   ['Mastered', '5+ successful reviews at gaps of 180 days or more.'],
   ['Your Streak', 'Consecutive days with at least one review.'],
+  ['Streak Freeze', 'Earned for every 7 days in a row (bank up to 2). A missed day spends one instead of breaking your streak.'],
+  ['XP & Levels', 'Every review earns XP, the same whatever you rate it, so there’s never a reason to fudge a rating. Bonuses come from beating your own time or recalling a problem you once blanked on. Levels run Intern → Fellow.'],
+  ['Daily Challenge', 'One surprise problem a day, aimed at your weak spots. Title hidden, no notes, one attempt. Recall it for bonus XP.'],
+  ['Readiness', 'Coverage × recall across 14 core interview patterns. Set an interview date to get a countdown and a daily pace.'],
   ['Where You’re Weakest', 'Success rate per tag. Needs 3+ reviews on a tag before the number is trusted.'],
 ];
 
@@ -43,7 +47,8 @@ const TIPS = [
   ['Rate honestly', 'Clicking Easy on something you fumbled pushes it months out — and you will have genuinely forgotten it by then.'],
   ['Write intuition as a hint, not a solution', '“Sort by end time, then greedily pick non-overlapping” beats pasting your whole answer. You want to trigger recall, not read code.'],
   ['Don’t add everything you solve', 'Add the ones that taught you something. Forty well-chosen problems beat three hundred you never revisit.'],
-  ['Missing days is fine', 'Nothing is lost. Overdue problems simply wait for you — the queue is a suggestion, not a debt.'],
+  ['Use the keyboard', '1–4 rates, Space reveals your intuition, S toggles the timer, O opens the problem and starts timing. A review takes seconds.'],
+  ['Missing days is fine', 'Nothing is lost. Overdue problems simply wait for you — the queue is a suggestion, not a debt. And a banked streak freeze covers the odd missed day.'],
 ];
 
 export default function Guide() {

@@ -139,3 +139,50 @@ describe('buildActivity — grid', () => {
     expect(a.days.every((d) => d.count === 0)).toBe(true);
   });
 });
+
+describe('buildActivity — streak freezes', () => {
+  // A run of N consecutive days ending on `endIso` (inclusive).
+  const run = (endIso, n) =>
+    Array.from({ length: n }, (_, i) => {
+      const d = new Date(endIso);
+      d.setUTCDate(d.getUTCDate() - (n - 1 - i));
+      return log(d.toISOString());
+    });
+
+  it('banks a freeze on the 7th day and spends it on a missed day', () => {
+    // 7 days Aug 1–7, miss Aug 8, back on Aug 9.
+    const now = new Date('2026-08-09T12:00:00Z');
+    const a = buildActivity([...run('2026-08-07T10:00:00Z', 7), log('2026-08-09T10:00:00Z')], { now });
+    expect(a.currentStreak).toBe(8); // frozen day holds the streak but doesn't add to it
+    expect(a.freezesAvailable).toBe(0);
+    expect(a.freezesUsed).toBe(1);
+    const aug8 = buildActivity([...run('2026-08-07T10:00:00Z', 7)], { now, windowDays: 3 }).days;
+    expect(aug8.find((d) => d.date === '2026-08-08')).toEqual({ date: '2026-08-08', count: 0, frozen: true });
+  });
+
+  it('still breaks when there is no freeze to spend', () => {
+    const now = new Date('2026-08-09T12:00:00Z');
+    const a = buildActivity([...run('2026-08-06T10:00:00Z', 6), log('2026-08-08T10:00:00Z')], { now });
+    // 6-day run earns nothing, so the Aug 7 gap resets it.
+    expect(a.currentStreak).toBe(1);
+    expect(a.freezesAvailable).toBe(0);
+  });
+
+  it('caps banked freezes at two, and two misses use both', () => {
+    const now = new Date('2026-08-24T12:00:00Z');
+    // 21 straight days (Aug 1–21) would earn 3 freezes; cap is 2.
+    const logs = run('2026-08-21T10:00:00Z', 21);
+    expect(buildActivity(logs, { now: new Date('2026-08-21T12:00:00Z') }).freezesAvailable).toBe(2);
+    // Miss Aug 22 and 23, review Aug 24: both freezes spent, streak survives.
+    const a = buildActivity([...logs, log('2026-08-24T10:00:00Z')], { now });
+    expect(a.currentStreak).toBe(22);
+    expect(a.freezesUsed).toBe(2);
+    expect(a.freezesAvailable).toBe(0);
+  });
+
+  it('reports the first day each streak milestone was reached', () => {
+    const now = new Date('2026-08-09T12:00:00Z');
+    const a = buildActivity(run('2026-08-09T10:00:00Z', 7), { now, milestones: [3, 7, 30] });
+    expect(a.milestoneDates).toEqual({ 3: '2026-08-05', 7: '2026-08-09' });
+  });
+});

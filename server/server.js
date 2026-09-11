@@ -9,6 +9,7 @@ const authRouter = require('./routes/auth');
 const problemsRouter = require('./routes/problems');
 const reviewsRouter = require('./routes/reviews');
 const statsRouter = require('./routes/stats');
+const progressRouter = require('./routes/progress');
 
 const REQUIRED_ENV_VARS = ['JWT_SECRET', 'GOOGLE_CLIENT_ID', 'MONGODB_URI'];
 const missing = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
@@ -44,6 +45,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/problems', problemsRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use('/api/stats', statsRouter);
+app.use('/api/progress', progressRouter);
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 

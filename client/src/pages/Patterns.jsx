@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { statsApi } from '../api/client';
 import StateBadge from '../components/StateBadge';
+import { formatDaysAgo, formatDuration } from '../utils/format';
 
 const TIER_STYLES = {
   unranked: { label: 'Unranked', icon: '○', text: 'text-midnight-muted', chip: 'ring-white/10 bg-white/5' },
@@ -42,21 +43,6 @@ function sortPatterns(patterns, sort) {
     return list.sort((a, b) => age(b) - age(a));
   }
   return list; // server already sorts weakest-first
-}
-
-function formatDuration(sec) {
-  if (sec == null) return '—';
-  const m = Math.floor(sec / 60);
-  const s = Math.round(sec % 60);
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
-
-function formatAgo(days) {
-  if (days === null) return 'never';
-  if (days === 0) return 'today';
-  if (days === 1) return 'yesterday';
-  if (days < 30) return `${days}d ago`;
-  return `${Math.floor(days / 30)}mo ago`;
 }
 
 function TierBadge({ tier }) {
@@ -164,7 +150,7 @@ function PatternCard({ pattern }) {
           </span>
           <span>avg {formatDuration(pattern.avgTimeSec)}</span>
           <span className={pattern.rusty ? 'text-rating-hard' : ''}>
-            {pattern.rusty ? '⚠ rusty · ' : ''}last {formatAgo(pattern.daysSincePractice)}
+            {pattern.rusty ? '⚠ rusty · ' : ''}last {formatDaysAgo(pattern.daysSincePractice)}
           </span>
           {pattern.dueNow > 0 && <span className="text-accent-orange">{pattern.dueNow} due</span>}
         </div>
