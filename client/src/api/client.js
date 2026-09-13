@@ -103,6 +103,24 @@ export const reviewsApi = {
     api.post(`/reviews/${cardId}`, payload, { params: { tzOffset: tzOffset() } }).then((r) => r.data),
 };
 
+// Whether the server has a key configured is fixed for the life of the page,
+// so it's fetched once and shared — every ProblemCard would otherwise ask.
+let recallStatusPromise = null;
+
+export const recallApi = {
+  status: () => {
+    if (!recallStatusPromise) {
+      recallStatusPromise = api
+        .get('/recall/status')
+        .then((r) => r.data)
+        .catch(() => ({ enabled: false }));
+    }
+    return recallStatusPromise;
+  },
+  grade: (problemId, attempt) =>
+    api.post(`/recall/${problemId}`, { attempt }).then((r) => r.data),
+};
+
 export const progressApi = {
   get: () => api.get('/progress', { params: { tzOffset: tzOffset() } }).then((r) => r.data),
   today: () => api.get('/progress/today', { params: { tzOffset: tzOffset() } }).then((r) => r.data),

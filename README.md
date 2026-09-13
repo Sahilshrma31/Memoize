@@ -151,6 +151,77 @@ The client's language list mirrors the server's; `__tests__/languages.test.js`
 fails if the two drift, since a language you can pick but can't save is the
 failure mode that would otherwise slip through.
 
+## AI-graded recall (optional)
+
+Spaced repetition is only as good as the rating you give yourself, and people
+grade themselves generously — you half-remember an approach, click **Good**,
+and the scheduler pushes the problem three weeks out.
+
+Memoize already asks you to type the approach from memory before revealing the
+intuition. That text used to be discarded. With an API key set, you can hand it
+to Claude instead: it's compared against *your own* saved intuition and
+solution, and comes back with a 0-100 recall score, what you got, what you
+missed, and a suggested rating — marked with a dot on the rating buttons.
+
+The score comes from the model; the mapping into an SM-2 rating is done in
+`server/utils/recallGrader.js`, not asked for, so it stays consistent instead
+of drifting with the model's read of what "hard" means:
+
+| Score  | Rating     |
+|--------|------------|
+| 88-100 | `easy`     |
+| 65-87  | `good`     |
+| 35-64  | `hard`     |
+| 0-34   | `blackout` |
+
+**It is entirely optional, and free to run.** Set one key in `server/.env`:
+
+| Provider | Env var | Cost | Measured |
+|----------|---------|------|----------|
+| Gemini (`gemini-3.8-flash`) | `GEMINI_API_KEY` — [get one](https://aistudio.google.com/apikey) | Free tier, no billing account | ~10s per check, 5 requests/min |
+| Claude (`claude-opus-5`) | `ANTHROPIC_API_KEY` | Paid, ~1¢ per check | — |
+
+Set both and Claude wins, on the assumption a paid key was deliberate;
+`RECALL_PROVIDER=gemini` overrides that. Set neither and
+`GET /api/recall/status` reports `enabled: false`, the button never renders,
+and Memoize behaves exactly as it did. The server does not require any of them
+to boot — only `JWT_SECRET`, `GOOGLE_CLIENT_ID` and `MONGODB_URI` are
+mandatory, so a deploy can't break because you forgot one.
+
+> `server/.env` is gitignored and never ships. For a deployed instance the key
+> has to be set in the host's own environment settings as well, or the live
+> site will keep reporting the feature as off.
+
+Implementation notes:
+
+- `server/utils/providers/*.js` each turn `(system, prompt, schema)` into a
+  JSON string; everything above that line — the rubric, the schema, the score
+  mapping, the route guards, the UI — is shared. Switching provider is config,
+  not a rewrite.
+- The response is constrained to a JSON schema by both providers, so the result
+  is typed data rather than prose to be regex'd out. The schema is kept inside
+  the OpenAPI subset Gemini accepts; the Claude provider adds
+  `additionalProperties` itself.
+- Server-side only. The key never reaches the browser.
+- Capped at 40 checks per account per 15 minutes, on top of the global limiter,
+  and the attempt and solution are truncated before they're sent.
+- Every failure path — no key, a refusal, an unreadable response, a rate limit —
+  falls back to rating yourself by hand. The feature can never block a review.
+- Gemini runs at `thinking_level: low`. This is a bounded comparison against a
+  short reference, and the default (`medium`) measured ~24s against ~10s — too
+  slow to sit inside a review loop. The button shows a ticking counter, because
+  ten seconds of a static "Grading…" reads as a hung button.
+- The free tier allows 5 requests/minute. Going over returns a plain
+  "try again in ~Ns" rather than Google's wall of billing text, and the server
+  additionally caps each account at 40 checks per 15 minutes.
+- A misspelled `RECALL_PROVIDER`, or one naming a provider whose key is absent,
+  resolves to "off" rather than silently falling through to the other one.
+
+| Method | Route                     | Description                                  |
+|--------|---------------------------|----------------------------------------------|
+| GET    | `/api/recall/status`      | Whether grading is configured on this server |
+| POST   | `/api/recall/:problemId`  | Grade `{ attempt }` against the saved answer |
+
 ## How the scheduling works (SM-2)
 
 Every `Problem` has a 1:1 `ReviewCard` that tracks its scheduling state:

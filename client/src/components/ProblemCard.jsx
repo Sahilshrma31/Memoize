@@ -31,6 +31,7 @@ export default function ProblemCard({
   const [submitting, setSubmitting] = useState(false);
   const [running, setRunning] = useState(autoStart);
   const [revealRequest, setRevealRequest] = useState(0);
+  const [suggestedRating, setSuggestedRating] = useState(null);
   const secondsRef = useRef(0);
   const isChallenge = variant === 'challenge';
 
@@ -129,6 +130,7 @@ export default function ProblemCard({
             startHidden
             compact
             revealRequest={revealRequest}
+            onGraded={(grade) => setSuggestedRating(grade.suggestedRating)}
           />
         </div>
       )}
@@ -155,7 +157,12 @@ export default function ProblemCard({
       </div>
 
       <div className="mt-3">
-        <RatingButtons onRate={handleRate} disabled={submitting} showKeys={active} />
+        <RatingButtons
+          onRate={handleRate}
+          disabled={submitting}
+          showKeys={active}
+          suggested={suggestedRating}
+        />
       </div>
     </div>
   );

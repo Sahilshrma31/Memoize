@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { problemsApi } from '../api/client';
+import { problemsApi, recallApi } from '../api/client';
 import { useToast } from '../context/ToastContext';
+import RecallGrade from './RecallGrade';
 
 function timeAgo(date) {
   if (!date) return null;
@@ -24,6 +25,7 @@ export default function IntuitionPanel({
   startHidden = false,
   compact = false,
   revealRequest = 0, // bump to reveal from outside (the Space shortcut)
+  onGraded, // receives the grade so the card can flag the suggested rating
 }) {
   const [revealed, setRevealed] = useState(!startHidden);
   const [editing, setEditing] = useState(false);
@@ -32,6 +34,12 @@ export default function IntuitionPanel({
   // What you think the approach is, typed before peeking. Not saved — its
   // only job is to make you commit to an answer so the reveal means something.
   const [attempt, setAttempt] = useState('');
+  // AI recall grading is optional server-side, so the button only appears once
+  // the server confirms it has a key.
+  const [gradingEnabled, setGradingEnabled] = useState(false);
+  const [grading, setGrading] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const [grade, setGrade] = useState(null);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -39,7 +47,46 @@ export default function IntuitionPanel({
     setRevealed(!startHidden);
     setEditing(false);
     setAttempt('');
+    setGrade(null);
   }, [problem._id, problem.intuition, startHidden]);
+
+  useEffect(() => {
+    // Only the review flow asks you to recall first, so that's the only place
+    // the grader is offered.
+    if (!startHidden) return undefined;
+    let alive = true;
+    recallApi
+      .status()
+      .then((s) => alive && setGradingEnabled(Boolean(s.enabled)))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [startHidden]);
+
+  // Grading takes ten seconds or more. Without a ticking counter a static
+  // "Grading…" reads as a hung button.
+  useEffect(() => {
+    if (!grading) return undefined;
+    setElapsed(0);
+    const timer = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(timer);
+  }, [grading]);
+
+  const checkRecall = async () => {
+    if (!attempt.trim() || grading) return;
+    setGrading(true);
+    try {
+      const result = await recallApi.grade(problem._id, attempt);
+      setGrade(result);
+      setRevealed(true); // you've committed to an answer — now compare
+      onGraded?.(result);
+    } catch (err) {
+      showToast(err.response?.data?.error || 'Could not grade that attempt', 'error');
+    } finally {
+      setGrading(false);
+    }
+  };
 
   useEffect(() => {
     if (revealRequest > 0) setRevealed(true);
@@ -120,16 +167,33 @@ export default function IntuitionPanel({
             placeholder="Before you peek: what's the approach? One line is enough."
             className="w-full bg-transparent text-sm text-midnight-text placeholder:text-midnight-muted/60 outline-none resize-none"
           />
-          <button
-            type="button"
-            onClick={() => setRevealed(true)}
-            className="w-full border border-midnight-border px-4 py-2 text-xs uppercase tracking-wide text-midnight-muted hover:border-accent-orange/50 hover:text-midnight-text transition-colors"
-          >
-            Reveal intuition{compact && <span className="opacity-50 normal-case"> · space</span>}
-          </button>
+          <div className="flex gap-2">
+            {gradingEnabled && (
+              <button
+                type="button"
+                onClick={checkRecall}
+                disabled={!attempt.trim() || grading}
+                className="flex-1 border border-accent-orange/40 px-4 py-2 text-xs uppercase tracking-wide text-accent-orange hover:bg-accent-orange/10 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+              >
+                {grading ? `Grading… ${elapsed}s` : 'Check my recall'}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setRevealed(true)}
+              className="flex-1 border border-midnight-border px-4 py-2 text-xs uppercase tracking-wide text-midnight-muted hover:border-accent-orange/50 hover:text-midnight-text transition-colors"
+            >
+              Reveal intuition{compact && <span className="opacity-50 normal-case"> · space</span>}
+            </button>
+          </div>
         </div>
       ) : (
         <div>
+          {grade && (
+            <div className="mb-3">
+              <RecallGrade grade={grade} />
+            </div>
+          )}
           {attempt.trim() && (
             <div className="mb-3 border-l-2 border-midnight-border pl-3">
               <p className="text-[10px] uppercase tracking-widest text-midnight-muted">You recalled</p>
