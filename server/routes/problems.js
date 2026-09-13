@@ -29,7 +29,8 @@ router.get('/lookup', async (req, res) => {
 // POST /api/problems - create a Problem + auto-create its ReviewCard (due now)
 router.post('/', async (req, res) => {
   try {
-    const { title, url, platform, tags, company, difficulty, notes, intuition } = req.body;
+    const { title, url, platform, tags, company, difficulty, notes, intuition, code, language } =
+      req.body;
 
     const problem = await Problem.create({
       userId: req.userId,
@@ -42,6 +43,10 @@ router.post('/', async (req, res) => {
       notes,
       intuition,
       intuitionUpdatedAt: intuition ? new Date() : undefined,
+      code,
+      // An empty string would fail the enum, so fall through to the default.
+      language: language || undefined,
+      codeUpdatedAt: code ? new Date() : undefined,
     });
 
     const reviewCard = await ReviewCard.create({ userId: req.userId, problemId: problem._id });
@@ -100,7 +105,17 @@ router.get('/:id', async (req, res) => {
 // PATCH /api/problems/:id - edit the parts of a problem that evolve over time.
 // Intuition especially: it gets rewritten as understanding sharpens, so it
 // can't be write-once like the rest of the record.
-const EDITABLE_FIELDS = ['title', 'url', 'notes', 'intuition', 'tags', 'company', 'difficulty'];
+const EDITABLE_FIELDS = [
+  'title',
+  'url',
+  'notes',
+  'intuition',
+  'code',
+  'language',
+  'tags',
+  'company',
+  'difficulty',
+];
 
 router.patch('/:id', async (req, res) => {
   try {
@@ -111,6 +126,13 @@ router.patch('/:id', async (req, res) => {
       }
     }
 
+    // A blank language means "leave it alone" rather than "store an empty
+    // string", which the enum would reject. Dropped before the empty check so
+    // a patch of only `language: ''` doesn't reach Mongo as an empty $set.
+    if (updates.language === '' || updates.language == null) {
+      delete updates.language;
+    }
+
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({ error: 'No editable fields supplied' });
     }
@@ -118,6 +140,11 @@ router.patch('/:id', async (req, res) => {
     // Stamp the intuition edit so the UI can show when it was last refined.
     if (Object.prototype.hasOwnProperty.call(updates, 'intuition')) {
       updates.intuitionUpdatedAt = new Date();
+    }
+
+    // Same for the solution.
+    if (Object.prototype.hasOwnProperty.call(updates, 'code')) {
+      updates.codeUpdatedAt = new Date();
     }
 
     const problem = await Problem.findOneAndUpdate(

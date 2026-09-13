@@ -114,3 +114,128 @@
     opacity: 0;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Saved solutions — VS Code "Dark+" palette.
+
+   Token colours are taken straight from the Default Dark+ theme so a solution
+   reads exactly as it did in the editor it was written in. highlight.js can't
+   tell a control keyword from a declaration keyword, so `hljs-decl` is added
+   in utils/highlight.js to pull `class` / `public` / `int` back to Dark+'s
+   blue while `if` / `return` / `while` stay pink.
+--------------------------------------------------------------------------- */
+@layer components {
+  .code-surface {
+    @apply font-mono;
+    background: #1e1e1e;
+    color: #d4d4d4;
+  }
+
+  /* The editor stacks a transparent textarea on top of a highlighted <pre>.
+     Every metric below has to match in both or the caret drifts away from the
+     glyphs, so they share one class. */
+  .code-text {
+    @apply font-mono;
+    margin: 0;
+    border: 0;
+    padding: 0.875rem 1rem;
+    font-size: 13px;
+    line-height: 1.6;
+    tab-size: 4;
+    letter-spacing: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  /* Read-only view: no wrapping, so the line-number gutter stays aligned. */
+  .code-scroll {
+    white-space: pre;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+}
+
+.hljs {
+  color: #d4d4d4;
+  background: transparent;
+}
+.hljs-comment,
+.hljs-quote {
+  color: #6a9955;
+  font-style: italic;
+}
+.hljs-doctag {
+  color: #608b4e;
+}
+/* Control flow: if, while, for, return, break. */
+.hljs-keyword {
+  color: #c586c0;
+}
+/* Declarations and primitive types, pulled back to Dark+'s blue. */
+.hljs-decl,
+.hljs-literal,
+.hljs-type,
+.hljs-selector-tag,
+.hljs-name,
+.hljs-section {
+  color: #569cd6;
+}
+/* Library types — std::vector, String, List. */
+.hljs-built_in,
+.hljs-title.class_,
+.hljs-class .hljs-title,
+.hljs-title.class_.inherited__ {
+  color: #4ec9b0;
+}
+.hljs-title,
+.hljs-title.function_,
+.hljs-function .hljs-title {
+  color: #dcdcaa;
+}
+.hljs-variable,
+.hljs-attr,
+.hljs-attribute,
+.hljs-property,
+.hljs-params,
+.hljs-template-variable,
+.hljs-selector-attr {
+  color: #9cdcfe;
+}
+.hljs-string,
+.hljs-meta .hljs-string,
+.hljs-char.escape_ {
+  color: #ce9178;
+}
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet {
+  color: #b5cea8;
+}
+.hljs-regexp {
+  color: #d16969;
+}
+/* #include, #define, decorators. */
+.hljs-meta,
+.hljs-meta .hljs-keyword {
+  color: #c586c0;
+}
+.hljs-operator,
+.hljs-punctuation {
+  color: #d4d4d4;
+}
+.hljs-subst {
+  color: #d4d4d4;
+}
+.hljs-deletion {
+  color: #e05a5a;
+}
+.hljs-addition {
+  color: #4fbf82;
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: 600;
+}

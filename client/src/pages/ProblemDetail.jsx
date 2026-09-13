@@ -5,6 +5,7 @@ import Chip from '../components/Chip';
 import DeleteProblem from '../components/DeleteProblem';
 import IntuitionPanel from '../components/IntuitionPanel';
 import PlatformBadge from '../components/PlatformBadge';
+import SolutionPanel from '../components/SolutionPanel';
 import StateBadge from '../components/StateBadge';
 
 // Keeps recharts out of the main bundle — see Landing.jsx.
@@ -90,6 +91,11 @@ export default function ProblemDetail() {
       </div>
 
       <IntuitionPanel
+        problem={problem}
+        onSaved={(updated) => setData((d) => ({ ...d, problem: updated }))}
+      />
+
+      <SolutionPanel
         problem={problem}
         onSaved={(updated) => setData((d) => ({ ...d, problem: updated }))}
       />

@@ -4,6 +4,7 @@ import Chip from './Chip';
 import IntuitionPanel from './IntuitionPanel';
 import PlatformBadge from './PlatformBadge';
 import RatingButtons, { RATINGS } from './RatingButtons';
+import SolutionPanel from './SolutionPanel';
 import Stopwatch from './Stopwatch';
 
 const RATING_BY_KEY = Object.fromEntries(RATINGS.map((r) => [r.key, r.value]));
@@ -129,6 +130,14 @@ export default function ProblemCard({
             compact
             revealRequest={revealRequest}
           />
+        </div>
+      )}
+
+      {/* Kept behind its own click, and out of challenges entirely: reading
+          the solution before re-solving turns a review into a re-read. */}
+      {!isChallenge && (
+        <div className="mt-3">
+          <SolutionPanel problem={problem} onSaved={setProblem} startHidden compact />
         </div>
       )}
 

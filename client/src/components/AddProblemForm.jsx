@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { problemsApi } from '../api/client';
 import { useToast } from '../context/ToastContext';
+import { DEFAULT_LANGUAGE } from '../utils/highlight';
 import ChipsInput from './ChipsInput';
+import CodeEditor from './CodeEditor';
+import LanguageSelect from './LanguageSelect';
 
 const PLATFORM_HOSTS = [
   { host: 'leetcode.com', value: 'leetcode' },
@@ -36,8 +39,9 @@ const EMPTY_FORM = {
   tags: [],
   company: [],
   difficulty: 'medium',
-  notes: '',
   intuition: '',
+  code: '',
+  language: DEFAULT_LANGUAGE,
 };
 
 const inputCls =
@@ -254,15 +258,25 @@ export default function AddProblemForm({ onAdded, collapsible = false }) {
           </div>
 
           <div>
-            <label className={labelCls}>
-              Notes <span className="text-midnight-muted/60 normal-case">— why it's worth revisiting</span>
-            </label>
-            <textarea
-              rows={2}
-              value={form.notes}
-              onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-              placeholder="Got stuck on the edge case, or a pattern that keeps recurring…"
-              className={`${inputCls} resize-none`}
+            <div className="flex items-center justify-between gap-3 mb-1.5">
+              <span className="text-xs uppercase tracking-wide text-midnight-muted">
+                Solution{' '}
+                <span className="text-midnight-muted/60 normal-case">
+                  — the code you got accepted
+                </span>
+              </span>
+              <LanguageSelect
+                value={form.language}
+                onChange={(language) => setForm((f) => ({ ...f, language }))}
+              />
+            </div>
+            <CodeEditor
+              value={form.code}
+              onChange={(code) => setForm((f) => ({ ...f, code }))}
+              language={form.language}
+              onDetectLanguage={(language) => setForm((f) => ({ ...f, language }))}
+              minRows={6}
+              placeholder="Paste your accepted solution — it's highlighted as you type, and stays hidden until you reveal it in a review."
             />
           </div>
 

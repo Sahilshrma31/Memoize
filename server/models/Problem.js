@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { LANGUAGES, DEFAULT_LANGUAGE } = require('../utils/languages');
 
 const problemSchema = new mongoose.Schema(
   {
@@ -24,6 +25,12 @@ const problemSchema = new mongoose.Schema(
     // your understanding sharpens across reviews.
     intuition: { type: String, default: '' },
     intuitionUpdatedAt: { type: Date },
+    // Your accepted solution, kept verbatim so it can be re-read (and
+    // re-highlighted) later. Intuition is the one-line idea; this is the
+    // actual implementation you want to compare your re-attempt against.
+    code: { type: String, default: '' },
+    language: { type: String, enum: LANGUAGES, default: DEFAULT_LANGUAGE },
+    codeUpdatedAt: { type: Date },
   },
   { timestamps: true }
 );

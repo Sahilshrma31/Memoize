@@ -18,7 +18,7 @@ To put this online for other people, see **[DEPLOYMENT.md](DEPLOYMENT.md)**.
   /models      User, Problem, ReviewCard, ReviewLog (Mongoose schemas)
   /routes      auth.js, problems.js, reviews.js, stats.js
   /middleware  requireAuth.js — JWT bearer-token gate
-  /utils       sm2.js — pure scheduling function; jwt.js
+  /utils       sm2.js — pure scheduling function; jwt.js; languages.js
   /scripts     claimOrphanedData.js — one-time pre-auth data migration
   /__tests__   sm2.test.js — Jest unit tests
   server.js
@@ -116,6 +116,40 @@ cd server
 node scripts/claimOrphanedData.js you@gmail.com --dry-run   # preview
 node scripts/claimOrphanedData.js you@gmail.com             # apply
 ```
+
+## Solutions
+
+Each problem stores the code you solved it with, alongside the one-line
+`intuition`. Two fields on `Problem` back it: `code` (the source, verbatim) and
+`language` (one of the ids in `server/utils/languages.js`, which the schema
+enforces as an enum).
+
+It's rendered in VS Code's **Default Dark+** palette — control keywords pink,
+declarations and types blue, strings orange, comments green, methods yellow —
+so a solution reads the way it did in the editor you wrote it in.
+`client/src/utils/highlight.js` loads highlight.js and its grammars through a
+dynamic `import()`, so none of it lands in the main bundle; until it resolves,
+the code renders as plain text rather than not at all.
+
+highlight.js tags every reserved word as `hljs-keyword`, but Dark+ splits them
+in two, so declaration keywords (`class`, `public`, `int`) are re-tagged
+`hljs-decl` after highlighting and pulled back to blue. Without that, every
+`public static void` comes out the wrong colour.
+
+Where it shows up:
+
+- **Add a problem** — a small editor with live highlighting. Tab indents four
+  spaces, Shift+Tab dedents, Enter keeps the current indentation, Escape steps
+  out of the field. Pasting into an empty editor guesses the language.
+- **Review queue** — kept behind a *Show my solution* click. Reading it before
+  you've re-solved the problem turns a review into a re-read, so it is never
+  revealed by default, and never shown at all during a daily challenge.
+- **Problem detail** — shown with a line-number gutter and copy button, folded
+  at 22 lines.
+
+The client's language list mirrors the server's; `__tests__/languages.test.js`
+fails if the two drift, since a language you can pick but can't save is the
+failure mode that would otherwise slip through.
 
 ## How the scheduling works (SM-2)
 
