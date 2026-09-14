@@ -115,6 +115,21 @@ in — everyone else gets "Access blocked".
    | `JWT_SECRET` | a long random string (see below) |
    | `GOOGLE_CLIENT_ID` | from step 1 |
    | `FRONTEND_URL` | `https://your-app.vercel.app` (fill in after step 4) |
+   | `GEMINI_API_KEY` | *optional* — enables AI-graded recall ([free key](https://aistudio.google.com/apikey)) |
+
+   The server refuses to boot without `MONGODB_URI`, `JWT_SECRET` or
+   `GOOGLE_CLIENT_ID`. `FRONTEND_URL` isn't enforced — it falls back to
+   `http://localhost:5173` — but leave it unset in production and CORS will
+   reject every request from your real frontend, which looks like the API
+   being down rather than a misconfiguration.
+
+   `GEMINI_API_KEY` is deliberately **not** required. Leave it out and the
+   recall grader reports itself disabled, the button never renders, and
+   everything else works — a deploy can't break because you forgot it. Set it
+   here and nowhere else: a key in your local `.env` never reaches the
+   deployed server, which is the usual reason the feature works on localhost
+   and looks broken in production. (`ANTHROPIC_API_KEY` is the paid
+   alternative; set `RECALL_PROVIDER` only if you set both.)
 
    Generate a secret locally with:
    ```bash
