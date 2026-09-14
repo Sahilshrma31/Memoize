@@ -3,9 +3,9 @@
  * solved in each pattern, how often you've revised them, how well you recall
  * them, and which tier that earns.
  *
- * Unlike the weakness map (patternStats.js), which only sees problems that have
- * review history, this starts from the problems themselves — a pattern you've
- * solved five problems in but never reviewed still shows up, with 0 revisions.
+ * It starts from the problems themselves rather than from review history, so a
+ * pattern you've solved five problems in but never reviewed still shows up,
+ * with 0 revisions. Per-tag scoring comes from patternStats.js.
  *
  * Pure (no DB access) so it can be unit-tested like the other stats modules.
  */

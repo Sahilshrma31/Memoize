@@ -129,7 +129,6 @@ export const progressApi = {
 
 export const statsApi = {
   get: () => api.get('/stats', { params: { tzOffset: tzOffset() } }).then((r) => r.data),
-  patterns: () => api.get('/stats/patterns').then((r) => r.data),
   patternTracker: () => api.get('/stats/pattern-tracker').then((r) => r.data),
   activity: (days = 365) =>
     api.get('/stats/activity', { params: { tzOffset: tzOffset(), days } }).then((r) => r.data),

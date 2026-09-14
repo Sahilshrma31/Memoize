@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { progressApi } from '../api/client';
-import ActivityHeatmap from '../components/ActivityHeatmap';
 import AddProblemForm from '../components/AddProblemForm';
 import DailyChallenge from '../components/DailyChallenge';
-import PatternMap from '../components/PatternMap';
 import ReadinessPanel from '../components/ReadinessPanel';
 import TodayPanel from '../components/TodayPanel';
 import TodayQueue from '../components/TodayQueue';
@@ -59,21 +56,6 @@ export default function Home({ onDataChange, refreshKey }) {
           <ReadinessPanel readiness={today.readiness} goal={today.goal} onGoalSaved={onDataChange} />
         </section>
       )}
-
-      <section>
-        <h2 className="eyebrow mb-3">Your Streak</h2>
-        <ActivityHeatmap refreshKey={refreshKey} />
-      </section>
-
-      <section>
-        <div className="flex items-baseline justify-between mb-3">
-          <h2 className="eyebrow">Where You’re Weakest</h2>
-          <Link to="/patterns" className="text-xs uppercase tracking-wide text-midnight-muted hover:text-accent-orange">
-            Full pattern tracker →
-          </Link>
-        </div>
-        <PatternMap refreshKey={refreshKey} />
-      </section>
     </div>
   );
 }

@@ -108,9 +108,15 @@ function App() {
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/guide" element={<Guide />} />
+                {/* No stats strip here: TodayPanel already shows due, level and
+                    streak, and the strip repeated two of the three. */}
                 <Route
                   path="/app"
-                  element={withStats(<Home onDataChange={bumpStats} refreshKey={refreshKey} />)}
+                  element={
+                    <ProtectedRoute>
+                      <Home onDataChange={bumpStats} refreshKey={refreshKey} />
+                    </ProtectedRoute>
+                  }
                 />
                 <Route path="/problems" element={withStats(<AllProblems />)} />
                 <Route path="/problems/:id" element={withStats(<ProblemDetail />)} />

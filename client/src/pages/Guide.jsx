@@ -39,11 +39,11 @@ const GLOSSARY = [
   ['XP & Levels', 'Every review earns XP, the same whatever you rate it, so there’s never a reason to fudge a rating. Bonuses come from beating your own time or recalling a problem you once blanked on. Levels run Intern → Fellow.'],
   ['Daily Challenge', 'One surprise problem a day, aimed at your weak spots. Title hidden, no notes, one attempt. Recall it for bonus XP.'],
   ['Readiness', 'Coverage × recall across 14 core interview patterns. Set an interview date to get a countdown and a daily pace.'],
-  ['Where You’re Weakest', 'Success rate per tag. Needs 3+ reviews on a tag before the number is trusted.'],
+  ['Pattern Tracker', 'Success rate, tier and your weakest pattern, per tag, on the Patterns page. Needs 3+ reviews on a tag before the number is trusted.'],
 ];
 
 const TIPS = [
-  ['Tag everything', 'The weakness map groups by tag. An untagged problem can never tell you which patterns you keep failing.'],
+  ['Tag everything', 'The pattern tracker groups by tag. An untagged problem can never tell you which patterns you keep failing.'],
   ['Rate honestly', 'Clicking Easy on something you fumbled pushes it months out — and you will have genuinely forgotten it by then.'],
   ['Write intuition as a hint, not a solution', '“Sort by end time, then greedily pick non-overlapping” beats pasting your whole answer. You want to trigger recall, not read code.'],
   ['Don’t add everything you solve', 'Add the ones that taught you something. Forty well-chosen problems beat three hundred you never revisit.'],

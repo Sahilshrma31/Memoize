@@ -28,7 +28,10 @@ router.get('/', async (req, res) => {
       .reverse()
       .map((e) => ({ ...e, title: titleById.get(e.problemId) || 'Deleted problem' }));
 
+    const now = new Date();
     res.json({
+      // Read app-wide for the tab title; the cards are already loaded above.
+      dueNow: history.cards.filter((c) => new Date(c.nextReviewAt) <= now).length,
       level: progress.level,
       xpToday: progress.xpToday,
       xpByDay: progress.xpByDay,

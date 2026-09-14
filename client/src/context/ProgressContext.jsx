@@ -26,6 +26,15 @@ export function ProgressProvider({ enabled, refreshKey, children }) {
     };
   }, [enabled, refreshKey]);
 
+  // Due count in the tab title: a pinned tab nudges you back without a
+  // notification. It lives here because this is the one place mounted on every
+  // signed-in page — it used to sit in StatsHeader, which the dashboard no
+  // longer renders.
+  useEffect(() => {
+    const due = progress?.dueNow ?? 0;
+    document.title = due > 0 ? `(${due}) Memoize` : 'Memoize';
+  }, [progress]);
+
   return <ProgressContext.Provider value={progress}>{children}</ProgressContext.Provider>;
 }
 

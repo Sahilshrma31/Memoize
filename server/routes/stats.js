@@ -1,10 +1,8 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const Problem = require('../models/Problem');
 const ReviewCard = require('../models/ReviewCard');
 const ReviewLog = require('../models/ReviewLog');
 const requireAuth = require('../middleware/requireAuth');
-const { scorePatterns } = require('../utils/patternStats');
 const { buildActivity, dayKey, shiftDays } = require('../utils/activityStats');
 const { buildPatternTracker } = require('../utils/patternTracker');
 const { parseTzOffset, localDayStart } = require('../utils/history');
@@ -51,57 +49,6 @@ router.get('/', async (req, res) => {
         mastered: masteredCount,
       },
     });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /api/stats/patterns - success rate per DSA tag, weakest first.
-// Answers "which patterns do I actually keep failing?" from review history.
-router.get('/patterns', async (req, res) => {
-  try {
-    const userId = new mongoose.Types.ObjectId(req.userId);
-
-    const rows = await ReviewLog.aggregate([
-      { $match: { userId } },
-      {
-        $lookup: {
-          from: Problem.collection.name,
-          localField: 'problemId',
-          foreignField: '_id',
-          as: 'problem',
-        },
-      },
-      { $unwind: '$problem' },
-      { $unwind: '$problem.tags' },
-      {
-        $group: {
-          _id: '$problem.tags',
-          total: { $sum: 1 },
-          blackout: { $sum: { $cond: [{ $eq: ['$rating', 'blackout'] }, 1, 0] } },
-          hard: { $sum: { $cond: [{ $eq: ['$rating', 'hard'] }, 1, 0] } },
-          good: { $sum: { $cond: [{ $eq: ['$rating', 'good'] }, 1, 0] } },
-          easy: { $sum: { $cond: [{ $eq: ['$rating', 'easy'] }, 1, 0] } },
-          avgTimeSec: { $avg: '$timeTakenSec' },
-          problemIds: { $addToSet: '$problemId' },
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          tag: '$_id',
-          total: 1,
-          blackout: 1,
-          hard: 1,
-          good: 1,
-          easy: 1,
-          avgTimeSec: 1,
-          problemCount: { $size: '$problemIds' },
-        },
-      },
-    ]);
-
-    res.json({ patterns: scorePatterns(rows) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

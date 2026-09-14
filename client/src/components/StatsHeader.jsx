@@ -15,15 +15,6 @@ export default function StatsHeader({ refreshKey }) {
     statsApi.get().then(setStats).catch(() => {});
   }, [refreshKey]);
 
-  // Due count in the tab title: a pinned tab nudges you back without a notification.
-  useEffect(() => {
-    if (!stats) return undefined;
-    document.title = stats.dueToday > 0 ? `(${stats.dueToday}) Memoize` : 'Memoize';
-    return () => {
-      document.title = 'Memoize';
-    };
-  }, [stats]);
-
   const values = {
     dueToday: stats?.dueToday ?? '—',
     totalProblems: stats?.totalProblems ?? '—',

@@ -1,8 +1,8 @@
 /**
- * Scoring for the pattern weakness map.
+ * Per-tag success-rate scoring, shared by the pattern tracker.
  *
  * Kept pure (no DB access) so it can be unit-tested the same way sm2.js is.
- * The route feeds it rows already grouped by tag.
+ * patternTracker.js feeds it rows already grouped by tag.
  */
 
 // A pattern needs at least this many reviews before its success rate means

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import ActivityHeatmap from '../components/ActivityHeatmap';
 import { useProgress } from '../context/ProgressContext';
 import { formatShortDate } from '../utils/format';
 
@@ -134,6 +135,11 @@ export default function Progress() {
         <Stat label="Personal bests" value={counters.personalBests} />
         <Stat label="Redemptions" value={counters.redemptions} />
         <Stat label="Challenges won" value={counters.challengesWon} />
+      </section>
+
+      <section>
+        <h2 className="eyebrow mb-3">Activity</h2>
+        <ActivityHeatmap />
       </section>
 
       <section className="grid gap-4 md:grid-cols-2">
