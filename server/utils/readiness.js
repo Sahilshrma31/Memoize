@@ -11,10 +11,12 @@
  */
 
 const { normalizeTags } = require('./problemLookup');
+// Shared with the pattern tracker so both agree on when a success rate is
+// trustworthy.
+const { MIN_RELIABLE_REVIEWS } = require('./patternStats');
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const TARGET_PER_PATTERN = 5;
-const MIN_RELIABLE_REVIEWS = 3;
 const UNPROVEN_RECALL = 0.4;
 const RECALLED = new Set(['good', 'easy']);
 
