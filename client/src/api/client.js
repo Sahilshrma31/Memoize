@@ -98,7 +98,6 @@ const tzOffset = () => new Date().getTimezoneOffset();
 
 export const reviewsApi = {
   today: () => api.get('/reviews/today').then((r) => r.data),
-  upcoming: () => api.get('/reviews/upcoming').then((r) => r.data),
   submit: (cardId, payload) =>
     api.post(`/reviews/${cardId}`, payload, { params: { tzOffset: tzOffset() } }).then((r) => r.data),
 };

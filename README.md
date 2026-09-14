@@ -280,5 +280,4 @@ threshold, which is the point re-review is scheduled.
 | GET    | `/api/problems/:id`       | Problem + its ReviewCard + ReviewLog history                |
 | POST   | `/api/reviews/:cardId`    | Submit `{ rating, timeTakenSec }`, runs SM-2, logs review    |
 | GET    | `/api/reviews/today`      | Cards due now, populated with Problem                       |
-| GET    | `/api/reviews/upcoming`   | Cards due in the next 7 days                                 |
 | GET    | `/api/stats`               | Counts by state, total problems, due-today count, streak     |

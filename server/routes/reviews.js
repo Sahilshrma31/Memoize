@@ -25,23 +25,6 @@ router.get('/today', async (req, res) => {
   }
 });
 
-// GET /api/reviews/upcoming - ReviewCards due in next 7 days
-router.get('/upcoming', async (req, res) => {
-  try {
-    const now = new Date();
-    const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const cards = await ReviewCard.find({
-      userId: req.userId,
-      nextReviewAt: { $gt: now, $lte: sevenDaysFromNow },
-    })
-      .populate('problemId')
-      .sort({ nextReviewAt: 1 });
-    res.json(cards);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // POST /api/reviews/:cardId?tzOffset= - submit a review. The response carries
 // `rewards`: XP earned, personal bests, level-ups and newly unlocked
 // achievements, worked out by replaying history before and after.
